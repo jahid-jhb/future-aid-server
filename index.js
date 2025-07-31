@@ -53,6 +53,19 @@ async function run() {
             res.send({ token });
         });
 
+        // USER: Register or update user
+        app.post('/users', async (req, res) => {
+            const userInfo = req.body;
+
+            const isUserExist = await users.findOne({ email: userInfo.email });
+
+            if (isUserExist) {
+                return res.send('user already exist');
+            }
+            const result = await users.insertOne(userInfo);
+            res.send(result);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
