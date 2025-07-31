@@ -264,6 +264,18 @@ async function run() {
             res.send(result);
         });
 
+        // Change user role (admin only)
+        app.patch('/users/role/:id', verifyToken, async (req, res) => {
+            const adminUser = await users.findOne({ email: req.user.email });
+            if (adminUser?.role !== 'admin') return res.status(403).send({ message: 'Forbidden' });
+
+            const result = await users.updateOne(
+                { _id: new ObjectId(req.params.id) },
+                { $set: { role: req.body.role } }
+            );
+            res.send(result);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
