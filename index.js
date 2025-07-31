@@ -131,6 +131,102 @@ async function run() {
             res.send(result);
         });
 
+        // DELETE a scholarship (admin/moderator only)
+        app.delete('/scholarships/:id', verifyToken, async (req, res) => {
+            const userEmail = req.user.email;
+            const user = await users.findOne({ email: userEmail });
+
+            if (!['admin', 'moderator'].includes(user?.role)) {
+                return res.status(403).send({ message: 'Forbidden' });
+            }
+
+            const result = await scholarships.deleteOne({ _id: new ObjectId(req.params.id) });
+            res.send(result);
+        });
+
+
+        // APPLY for Scholarship
+        app.post('/applications', verifyToken, async (req, res) => {
+            const data = req.body;
+            data.userEmail = req.user.email;
+            data.appliedAt = new Date();
+            data.status = 'pending';
+
+            const result = await applications.insertOne(data);
+            res.send(result);
+        });
+
+        // GET My Applications
+        app.get('/my-applications', verifyToken, async (req, res) => {
+            const result = await applications.find({ userEmail: req.user.email }).toArray();
+            res.send(result);
+        });
+
+        // POST Review
+        app.post('/reviews', verifyToken, async (req, res) => {
+            const data = {
+                ...req.body,
+                userEmail: req.user.email,
+                reviewDate: new Date(),
+            };
+            const result = await reviews.insertOne(data);
+            res.send(result);
+        });
+
+        // GET all reviews — admin/mod only
+        app.get('/reviews', verifyToken, async (req, res) => {
+            const user = await users.findOne({ email: req.user.email });
+            if (!['admin', 'moderator'].includes(user?.role)) {
+                return res.status(403).send({ message: 'Forbidden' });
+            }
+
+            const result = await reviews.find().toArray();
+            res.send(result);
+        });
+
+        // Get reviews by user email
+        app.get('/reviews/user/:email', verifyToken, async (req, res) => {
+            const userEmail = req.params.email;
+            if (req.user.email !== userEmail) {
+                return res.status(403).send({ message: 'Forbidden' });
+            }
+            const result = await reviews.find({ userEmail }).toArray();
+            res.send(result);
+        });
+
+
+        // GET All Reviews for Scholarship
+        app.get('/reviews/:scholarshipId', async (req, res) => {
+            const result = await reviews.find({ scholarshipId: req.params.scholarshipId }).toArray();
+            res.send(result);
+        });
+
+
+        // Update a review by ID
+        app.patch('/reviews/:id', verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const update = req.body;
+
+            try {
+                const result = await reviews.updateOne(
+                    { _id: new ObjectId(id), userEmail: req.user.email },
+                    { $set: update }
+                );
+
+                if (result.modifiedCount === 0) {
+                    return res.status(404).send({ message: 'Review not found or already up-to-date' });
+                }
+
+                res.send({ message: 'Review updated successfully' });
+            } catch (error) {
+                // console.error('Error updating review:', error);
+                res.status(500).send({ message: 'Failed to update review' });
+            }
+        });
+
+
+
+
 
 
         // console.log("FutureAid server is ready!");
