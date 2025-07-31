@@ -78,6 +78,13 @@ async function run() {
 
         });
 
+        // USER: Get role
+        app.get('/users/role/:email', async (req, res) => {
+            const userEmail = req.params.email;
+            const user = await users.findOne({ email: userEmail });
+            res.send({ role: user?.role || 'user' });
+        });
+
 
 
         // console.log("FutureAid server is ready!");
