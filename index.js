@@ -103,6 +103,13 @@ async function run() {
             // console.log(result);
         });
 
+        // GET Single Scholarship by ID
+        app.get('/scholarships/:id', async (req, res) => {
+            const id = req.params.id;
+            const scholarship = await scholarships.findOne({ _id: new ObjectId(id) });
+            res.send(scholarship);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
