@@ -227,6 +227,43 @@ async function run() {
 
 
 
+        // MODERATOR: Manage all applications
+        app.get('/applications', verifyToken, async (req, res) => {
+            const userEmail = req.user.email;
+            const user = await users.findOne({ email: userEmail });
+            if (!['admin', 'moderator'].includes(user?.role)) return res.status(403).send({ message: 'Forbidden' });
+
+            const result = await applications.find().toArray();
+            res.send(result);
+        });
+
+        // MODERATOR: Update application status or feedback
+        app.patch('/applications/:id', verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const update = { $set: req.body };
+            const result = await applications.updateOne({ _id: new ObjectId(id) }, update);
+            res.send(result);
+        });
+
+        // DELETE User, Review, or Application (admin only)
+        app.delete('/users/:id', verifyToken, async (req, res) => {
+            const user = await users.findOne({ email: req.user.email });
+            if (user?.role !== 'admin') return res.status(403).send({ message: 'Forbidden' });
+
+            const result = await users.deleteOne({ _id: new ObjectId(req.params.id) });
+            res.send(result);
+        });
+
+        app.delete('/reviews/:id', verifyToken, async (req, res) => {
+            const result = await reviews.deleteOne({ _id: new ObjectId(req.params.id) });
+            res.send(result);
+        });
+
+        app.delete('/applications/:id', verifyToken, async (req, res) => {
+            const result = await applications.deleteOne({ _id: new ObjectId(req.params.id) });
+            res.send(result);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
