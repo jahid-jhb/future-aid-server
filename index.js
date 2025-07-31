@@ -66,6 +66,18 @@ async function run() {
             res.send(result);
         });
 
+        // Get all users (admin only)
+        app.get('/users', verifyToken, async (req, res) => {
+            const user = await users.findOne({ email: req.user.email });
+            if (user?.role !== 'admin') return res.status(403).send({ message: 'Forbidden' });
+
+            const result = await users.find().toArray();
+            res.send(result);
+
+            // console.log('decoded token', req.user);
+
+        });
+
 
 
         // console.log("FutureAid server is ready!");
