@@ -85,6 +85,17 @@ async function run() {
             res.send({ role: user?.role || 'user' });
         });
 
+        // POST Scholarship (Moderator/Admin only)
+        app.post('/scholarships', verifyToken, async (req, res) => {
+            const userEmail = req.user.email;
+            const user = await users.findOne({ email: userEmail });
+            if (!['admin', 'moderator'].includes(user?.role)) return res.status(403).send({ message: 'Forbidden' });
+
+            const result = await scholarships.insertOne(req.body);
+
+            res.send(result);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
