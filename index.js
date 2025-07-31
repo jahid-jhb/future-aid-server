@@ -110,6 +110,27 @@ async function run() {
             res.send(scholarship);
         });
 
+        // PATCH: Update scholarship by ID
+        app.patch('/scholarships/:id', verifyToken, async (req, res) => {
+            const userEmail = req.user.email;
+            const user = await users.findOne({ email: userEmail });
+            if (!['admin', 'moderator'].includes(user?.role)) return res.status(403).send({ message: 'Forbidden' });
+
+            const newObj = {};
+            for (const key in req.body) {
+                if (key !== "_id") {
+                    newObj[key] = req.body[key];
+                }
+            }
+
+            const result = await scholarships.updateOne(
+                { _id: new ObjectId(req.params.id) },
+                { $set: newObj }
+            );
+
+            res.send(result);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
