@@ -96,6 +96,13 @@ async function run() {
             res.send(result);
         });
 
+        // GET All Scholarships
+        app.get('/scholarships', async (req, res) => {
+            const result = await scholarships.find().toArray();
+            res.send(result);
+            // console.log(result);
+        });
+
 
 
         // console.log("FutureAid server is ready!");
