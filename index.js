@@ -43,6 +43,16 @@ async function run() {
         const applications = db.collection("applications");
         const reviews = db.collection("reviews");
 
+        // JWT Login - return token
+        app.post('/jwt', async (req, res) => {
+            const { email } = req.body;
+            const user = await users.findOne({ email });
+            if (!user) return res.status(404).send({ message: 'User not found' });
+
+            const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            res.send({ token });
+        });
+
 
 
         // console.log("FutureAid server is ready!");
