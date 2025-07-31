@@ -276,7 +276,26 @@ async function run() {
             res.send(result);
         });
 
+        // STRIPE: Create Payment Intent
+        app.post('/create-payment-intent', verifyToken, async (req, res) => {
+            const { amount } = req.body;
+            if (!amount || typeof amount !== 'number') {
+                return res.status(400).send({ error: 'Invalid amount' });
+            }
 
+            try {
+                const paymentIntent = await stripe.paymentIntents.create({
+                    amount,
+                    currency: 'usd',
+                    payment_method_types: ['card']
+                });
+
+                res.send({ clientSecret: paymentIntent.client_secret });
+            } catch (err) {
+                // console.error('Stripe Error:', err);
+                res.status(500).send({ error: 'Payment failed to initiate' });
+            }
+        });
 
         // console.log("FutureAid server is ready!");
         await client.db("admin").command({ ping: 1 });
